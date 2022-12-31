@@ -133,3 +133,6 @@ dmypy.json
 
 # Ignore dataset
 data/
+
+# Ignore model checkpoints
+checkpoints/
