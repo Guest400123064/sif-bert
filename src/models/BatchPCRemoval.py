@@ -19,14 +19,18 @@ class BatchPCRemoval(nn.Module):
         Therefore, larger batch sizes will result in better estimation, i.e., closer to 
         SIF, which operates over the entire dataset."""
     
-    def __init__(self, n_components: int = 1):
+    def __init__(self, word_embedding_dimension: int, n_components: int = 1):
         """Set number of components to remove from sentence embeddings.
+        
+        :param word_embedding_dimension: Output sentence embedding dimension.
+        :type word_embedding_dimension: int
         
         :param n_components: Number of components to remove from sentence embeddings.
         :type n_components: int
         """
         super(BatchPCRemoval, self).__init__()
-        self.config_keys = ["n_components"]
+        self.config_keys = ["word_embedding_dimension", "n_components"]
+        self.word_embedding_dimension = word_embedding_dimension
         self.n_components = n_components
 
     def forward(self, features: Dict[str, Any]):
@@ -45,6 +49,9 @@ class BatchPCRemoval(nn.Module):
         return features
 
     # For IO //////////////////////////////////////////////////////////////////////
+    def get_sentence_embedding_dimension(self):
+        return self.word_embedding_dimension
+
     def get_config_dict(self):
         return {key: self.__dict__[key] for key in self.config_keys}
 

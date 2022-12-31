@@ -14,9 +14,15 @@ logger = logging.getLogger(__name__)
 class MeanPooling(nn.Module):
     """Implements simple mean pooling of the token embeddings."""
         
-    def __init__(self):
+    def __init__(self, word_embedding_dimension: int):
+        """Simple mean pooling.
+        
+        :param word_embedding_dimension: Output sentence embedding dimension.
+        :type word_embedding_dimension: int
+        """
         super(MeanPooling, self).__init__()
-        self.config_keys = []
+        self.config_keys = ["word_embedding_dimension"]
+        self.word_embedding_dimension = word_embedding_dimension
     
     def forward(self, features: Dict[str, Any]):
         """Performs mean pooling on the token embeddings."""
@@ -31,6 +37,9 @@ class MeanPooling(nn.Module):
         return features
     
     # For IO //////////////////////////////////////////////////////////////////////
+    def get_sentence_embedding_dimension(self):
+        return self.word_embedding_dimension
+
     def get_config_dict(self):
         return {key: self.__dict__[key] for key in self.config_keys}
 

@@ -17,10 +17,14 @@ class SIFPooling(nn.Module):
         layer is NOT trainable."""
         
     def __init__(self, 
+                 word_embedding_dimension: int,
                  vocab:        List[str],
                  token_counts: Dict[str, int], 
                  a:            float = 1e-3):
         """Initializes the SIF layer.
+        
+        :param word_embedding_dimension: Output sentence embedding dimension.
+        :type word_embedding_dimension: int
 
         :param vocab: The vocabulary of the model. MUST be the same as the
             vocabulary used for base model. Note that the order of tokens 
@@ -36,7 +40,8 @@ class SIFPooling(nn.Module):
         :type a: float
         """
         super(SIFPooling, self).__init__()
-        self.config_keys  = ["vocab", "token_counts", "a"]
+        self.config_keys  = ["word_embedding_dimension", "vocab", "token_counts", "a"]
+        self.word_embedding_dimension = word_embedding_dimension
         self.vocab        = vocab
         self.token_counts = token_counts
         self.a            = a
@@ -76,10 +81,17 @@ class SIFPooling(nn.Module):
         return features
     
     @classmethod
-    def from_corpus_hf(cls, model_card: str, corpus: Union[str, List[str]], a: float = 1e-3) -> "SIFPooling":
+    def from_corpus_hf(cls, 
+                       word_embedding_dimension: int, 
+                       model_card: str, 
+                       corpus: Union[str, List[str]], 
+                       a: float = 1e-3) -> "SIFPooling":
         """Estimates the word frequencies (actually word counts) from a corpus of strings. 
             The sentences in the corpus are tokenized using the corresponding 
             Huggingface transformers tokenizer of the model for token frequency estimation.
+        
+        :param word_embedding_dimension: Output sentence embedding dimension.
+        :type word_embedding_dimension: int
         
         :param model_card: The model card of the model to use for tokenization, e.g., `bert-base-uncased`.
         :type model_card: str
@@ -106,9 +118,12 @@ class SIFPooling(nn.Module):
         # In order to make sure that the weightings (using `nn.Embedding`) aligns 
         # with the token ids, we need to sort the tokens by their ids. 
         vocab = [k for k, _ in sorted(tokenizer.get_vocab().items(), key=lambda x: x[1])]
-        return cls(vocab, token_counts, a=a)
+        return cls(word_embedding_dimension, vocab, token_counts, a=a)
     
     # For IO //////////////////////////////////////////////////////////////////////
+    def get_sentence_embedding_dimension(self):
+        return self.word_embedding_dimension
+
     def get_config_dict(self):
         return {key: self.__dict__[key] for key in self.config_keys}
 
