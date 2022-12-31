@@ -100,7 +100,7 @@ class SIFPooling(nn.Module):
         tokenizer = AutoTokenizer.from_pretrained(model_card)
         token_counts = Counter()
         for s in corpus:
-            tokens = tokenizer.tokenize(s, add_special_tokens=True)
+            tokens = tokenizer.tokenize(s, add_special_tokens=True, truncation=True)
             token_counts.update(tokens)
         
         # In order to make sure that the weightings (using `nn.Embedding`) aligns 
