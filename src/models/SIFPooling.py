@@ -74,10 +74,11 @@ class SIFPooling(nn.Module):
         embeddings  = features["token_embeddings"].transpose(1, 2)
         attn_masks  = features["attention_mask"].unsqueeze(-1).float()
         
-        seq_lengths = torch.clamp(attn_masks.sum(1, keepdim=True), min=1e-9)
-        sif_weights = (self.emb_layer(features["input_ids"]) * attn_masks / seq_lengths)
+        sif_weights = self.emb_layer(features["input_ids"]) * attn_masks
+        # denom = torch.clamp(attn_masks.sum(1, keepdim=True), min=1e-9)
+        denom = torch.clamp(sif_weights.sum(1, keepdim=True), min=1e-9)
         
-        features.update({"sentence_embedding": torch.bmm(embeddings, sif_weights).squeeze(-1)})
+        features.update({"sentence_embedding": torch.bmm(embeddings, sif_weights / denom).squeeze(-1)})
         return features
     
     @classmethod

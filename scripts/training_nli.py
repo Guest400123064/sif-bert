@@ -47,7 +47,7 @@ model_name = sys.argv[1] if len(sys.argv) > 1 else 'bert-base-uncased'
 train_batch_size = 32
 
 
-model_save_path = 'checkpoints/nli/training-nli-' + model_name.replace("/", "-") + '-' + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+model_save_path = 'checkpoints/nli/' + model_name.replace("/", "-") # + '-' + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 model = SentenceTransformer(f"checkpoints/untrained/{model_name}")
 
 
@@ -66,12 +66,14 @@ with gzip.open(nli_dataset_path, 'rt', encoding='utf8') as fIn:
             train_samples.append(InputExample(texts=[row['sentence1'], row['sentence2']], label=label_id))
 
             n += 1
-            if n >= 8192:
+            if n >= 8192 * 4:
                 break
 
 
 train_dataloader = DataLoader(train_samples, shuffle=True, batch_size=train_batch_size)
-train_loss = losses.SoftmaxLoss(model=model, sentence_embedding_dimension=model.get_sentence_embedding_dimension(), num_labels=len(label2int))
+train_loss = losses.SoftmaxLoss(model=model, 
+                                sentence_embedding_dimension=model.get_sentence_embedding_dimension(), 
+                                num_labels=len(label2int))
 
 
 #Read STSbenchmark dataset and use it as development set
