@@ -15,7 +15,9 @@ class BatchPCRemoval(nn.Module):
     """Inspired by the Smooth Inverse Frequency (SIF) common direction removal 
         method in https://openreview.net/pdf?id=SyK00v5xx. This layer is NOT trainable.
         Instead of learning the common direction, it performs a in-batch estimation by 
-        calculating the SVD of the sentence embeddings and removing the first `n_components`."""
+        calculating the SVD of the sentence embeddings and removing the first `n_components`.
+        Therefore, larger batch sizes will result in better estimation, i.e., closer to 
+        SIF, which operates over the entire dataset."""
     
     def __init__(self, n_components: int = 1):
         """Set number of components to remove from sentence embeddings.
