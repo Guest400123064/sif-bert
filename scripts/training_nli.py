@@ -44,7 +44,7 @@ if not os.path.exists(sts_dataset_path):
 model_name = sys.argv[1] if len(sys.argv) > 1 else 'bert-base-uncased'
 
 # Read the dataset
-train_batch_size = 32
+train_batch_size = 16
 
 
 model_save_path = 'checkpoints/nli/' + model_name.replace("/", "-") # + '-' + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -58,16 +58,10 @@ label2int = {"contradiction": 0, "entailment": 1, "neutral": 2}
 train_samples = []
 with gzip.open(nli_dataset_path, 'rt', encoding='utf8') as fIn:
     reader = csv.DictReader(fIn, delimiter='\t', quoting=csv.QUOTE_NONE)
-    
-    n = 0
     for row in reader:
         if row['split'] == 'train':
             label_id = label2int[row['label']]
             train_samples.append(InputExample(texts=[row['sentence1'], row['sentence2']], label=label_id))
-
-            n += 1
-            if n >= 8192 * 4:
-                break
 
 
 train_dataloader = DataLoader(train_samples, shuffle=True, batch_size=train_batch_size)

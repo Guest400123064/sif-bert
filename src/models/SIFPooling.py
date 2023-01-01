@@ -60,22 +60,21 @@ class SIFPooling(nn.Module):
         for i, token in enumerate(vocab):
             count = token_counts.get(token, 0)
             num_unknown_words += int(count == 0)
-            weights[i] = (1 / (1 + count / denom))
+            weights[i] = (1 / (0.5 + count / denom))
         
         logger.info(f"{num_unknown_words} of {len(vocab)} words without a "
                         "`count` value; setting SIF weight to 1.0")
         self.emb_layer = nn.Embedding.from_pretrained(weights, freeze=True)
     
     def forward(self, features: Dict[str, Any]):
-        """Performs SIF weighting by multiplying the token embeddings with the
-            corresponding SIF weights. The resulting token embeddings are then
-            averaged by length to obtain the sentence embedding."""
+        """Performs SIF weighted averaging of the token embeddings. Note that this
+            is different from the original paper, which normalizes the sentence 
+            embedding by length of the sentence."""
             
         embeddings  = features["token_embeddings"].transpose(1, 2)
         attn_masks  = features["attention_mask"].unsqueeze(-1).float()
         
         sif_weights = self.emb_layer(features["input_ids"]) * attn_masks
-        # denom = torch.clamp(attn_masks.sum(1, keepdim=True), min=1e-9)
         denom = torch.clamp(sif_weights.sum(1, keepdim=True), min=1e-9)
         
         features.update({"sentence_embedding": torch.bmm(embeddings, sif_weights / denom).squeeze(-1)})
